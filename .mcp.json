@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "crado": {
+      "type": "http",
+      "url": "https://crado.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CRADO_API_KEY}"
+      }
+    }
+  }
+}

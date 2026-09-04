@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "crado",
+  "description": "crado for Claude Code: publish self-contained HTML pages to shareable URLs, and migrate existing documents into crado.",
+  "owner": {
+    "name": "crado",
+    "url": "https://crado.ai"
+  },
+  "plugins": [
+    {
+      "name": "crado",
+      "description": "Connects Claude Code to crado (MCP server) and adds the crado-page-design and crado-migrate skills.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
