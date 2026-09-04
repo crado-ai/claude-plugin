@@ -29,7 +29,7 @@ set -Ux CRADO_API_KEY your-api-key
 
 Restart Claude Code so it picks the variable up.
 
-If the variable is not set, the MCP configuration still loads — nothing errors at startup. `claude mcp list` (or `/mcp` inside Claude Code) shows a warning naming the missing `CRADO_API_KEY`, and the header is sent with the literal text `${CRADO_API_KEY}` in it, so every tool call comes back as a 401 "Invalid or revoked API key" from the server. So if tools return 401, the variable was not visible to the process that launched Claude Code — check that you exported it in the profile that shell actually reads, and that you restarted afterwards.
+If the variable is not set, the MCP configuration still loads — nothing errors at startup. The header is sent with the literal text `${CRADO_API_KEY}` in it, so `claude mcp list` (or `/mcp` inside Claude Code) shows `crado` as failed to connect with a 401 "Invalid or revoked API key" from the server, and every tool call fails the same way. So if tools return 401, the variable was not visible to the process that launched Claude Code — check that you exported it in the profile that shell actually reads, and that you restarted afterwards.
 
 To verify: `claude mcp list` should show `crado` as connected, and asking Claude to run `list_pages` should return your library (empty is a valid answer).
 
