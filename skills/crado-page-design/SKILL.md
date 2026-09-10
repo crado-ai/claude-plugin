@@ -20,7 +20,7 @@ Publish with `publish_page` (title + html, optional `collection` and `workspace`
 
 ## Linking
 
-- **Link to another crado page with its absolute `url`** — the one returned by `publish_page` or listed by `list_pages`. Never a relative path: the document is served from a different origin than the app, so `/p/<slug>` resolves against the wrong host and 404s.
+- **Link to another crado page with its absolute `url`** — the one returned by `publish_page` or listed by `list_pages`. Never a relative path: the reader resolves `/p/<slug>` for you, but the direct document URL and the PDF do not, and they 404.
 - External links are ordinary `<a href="https://…">`. In-page `#anchor` links work as usual.
 - Need to link pages to each other? Publish them first, collect the URLs, then `update_page` the ones that link.
 
