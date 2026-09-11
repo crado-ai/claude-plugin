@@ -46,7 +46,24 @@ The reader's dark/light toggle repaints only the chrome around the iframe; the d
 
 ## PDF / print
 
-Readers can download a page as PDF; it prints the same document with backgrounds on. For documents likely to be exported, add a light `@media print` pass: sensible `@page` margins, `break-inside: avoid` on cards and figures, hide interactive-only chrome.
+PDF export renders the same document headlessly and injects crado's print stylesheet at render time, so every page gets these defaults for free: a heading is never left alone at the foot of a page, table heads and feet repeat on every page, and table rows, figures and images never split.
+
+- **Pagination vocabulary.** `data-page` on a block starts it on a fresh page and lets it flow onto the next when it is longer — nothing is clipped. `data-page="fill"` also stretches the block to the full page height (a cover, one item per page): one per page, and its own padding and border count inside that height, so a padded cover still fits on one page. `data-keep` never splits the block.
+- **Page setup.** Declare `@page { size: A4; margin: 18mm }` — `A4`, `letter` or `legal`, plus `landscape` when you want it. With no rule crado prints A4 portrait with 18 mm margins.
+- **Header and footer.** Put them in `<template data-pdf-header>` and `<template data-pdf-footer>`; crado lifts them out and prints them on every page. Inline styles only, crado wraps the template at `font-size: 9px` sans-serif and a per-element `font-size` overrides it, a logo as a data URI, `<span class="pageNumber"></span>` and `<span class="totalPages"></span>` for the numbers. Never a `<link>` inside a template — it fails the whole export. `@page` margin boxes (`@top-center` and friends) do not render, and the first page cannot skip the header.
+- **Print ground.** In print the page ground must be white — `@media print { :root { --ground: #fff } }`, or `body { background: #fff }` when the page has no ground variable. Chromium paints the body background only inside the page margins, so any tinted ground becomes a grey box framed by white margins.
+- **Fonts.** The PDF renderer resolves only `serif`, `sans-serif`, `monospace`, `system-ui`, `Arial` and `Helvetica`; every other family name silently becomes serif. So end every stack in a generic (`Inter, sans-serif`, never bare `Inter`) and self-embed any other face as a static woff2 data URI. Prefer `sans-serif` over `system-ui` when the PDF has to match the screen.
+- **Size.** Keep the document under 10 MB, data URIs included — that is the publish cap, so resize photos before inlining.
+
+## Templates: generate instead of writing HTML
+
+When the workspace already has a template for the kind of document being asked for, call `generate_page` with that template and the data it needs instead of writing the HTML yourself. The template owns the layout and the pagination; the data is the truth. One call renders it, publishes the page and builds the PDF, and returns `page_id`, `url`, `pdf_url`, `page_count`, `missing_fields` and `template_version`. Write the HTML and call `publish_page` only for free-form documents no template covers.
+
+- **Look first.** `list_templates` returns each template's key, name, current version, paper size, the top-level field names its sample data carries, and which one is the workspace default. Shape `data` like that sample.
+- **Photos.** They travel inside `data` as data URIs, so resize before you send: about 1200 px on the long edge, JPEG quality around 70. The whole `data` object is capped at 10 MB.
+- **Missing fields.** `missing_fields` lists every field the template read that your data did not supply, and each one prints as `[missing: field]` in both the page and the PDF. Fill them and generate again rather than shipping the marker.
+- **The PDF link.** For a page that is not public, `pdf_url` carries a token that works for 24 hours; hand it over promptly or regenerate it.
+- **Frame templates.** A template whose body slot is `{{ body }}` wraps HTML you wrote yourself: pass its key as `template` to `publish_page` or `update_page` and your HTML becomes the body.
 
 ## Design process
 
@@ -62,6 +79,18 @@ Before writing code, sketch a compact plan: 4–6 named colors, 2+ type roles, a
 - **Copy is design material**: name things by what readers recognize, active voice, specific beats clever.
 - Include a real `<title>` (a short noun-phrase name, no appended explainer) — it shows on the direct URL's tab. The `title` argument to `publish_page` is separate library metadata; keep the two consistent.
 
+## Diagrams
+
+No diagram library loads here — mermaid, D2 and every CDN are blocked — and none is needed for the figures a document usually carries: a flow of up to 5 steps, a sequence between up to 5 participants, a boxes-and-edges architecture of up to ~12 nodes. Draw them by hand in HTML/CSS or inline SVG so they use the page's own tokens, flip with the theme and print as vectors. Skeletons for all three are in [diagrams.md](diagrams.md): copy one and change the words, not the geometry. A graph beyond that size needs a real layout engine — render it to SVG outside crado and inline the result, or draw only the nodes that carry the point; do not hand-place thirty nodes.
+
+- **Palette through classes, never a literal colour inside the figure.** Style SVG through a few classes (`.box`, `.box-accent`, `.arrow`, `.arrow-dashed`, `.head`, `.line`, `.group`, `.muted`, `.mono`) that you declare in the page's own `<style>` reading the page tokens — a class the page does not define renders black; HTML connectors use `currentColor`. One hard-coded hex in a figure breaks it in the other theme.
+- **Fixed geometry, fluid size.** Give every SVG a `viewBox` starting at `0 0` with 20 units of margin around the outermost box, and `width: 100%; height: auto`; think in viewBox units. Boxes are 150×40 (a name, baseline at box `y + 25`) or 150×60 (name at `y + 26`, subtitle at `y + 44`); columns 225 apart, rows 90 apart; text `text-anchor="middle"` at the box centre.
+- **Arrows meet box edges.** An edge leaves the source box's edge and stops 2 units short of the target's border so the arrowhead does not overlap it (`M170 100H243` between a box ending at 170 and one starting at 245). Route with H/V segments and at most one `Q` curve, never through a box. One `<marker>` per SVG with `refX="9"` on a `0 0 10 10` viewBox and `orient="auto-start-reverse"`.
+- **Labels beside lines, never on them.** A horizontal edge's label is centred between the path's two endpoints with its baseline 8 units above the line, or 8 units below it when another edge already runs above; a vertical edge's label starts 8 units right of the line at the segment's midpoint; a note beside an activation bar starts 10 units right of it; two labels whose x ranges overlap keep their baselines at least 30 units apart. Code-shaped labels (`put(exports/{id}.pdf)`) go in `.mono` at 12, explanatory notes in `.muted` at 11.
+- **Sequence diagrams.** Lifelines dashed in the line colour; requests solid, replies dashed; the activation is a 16-wide `.box-accent` rect centred on the lifeline; edges leave from the bar's edge, not from the lifeline. Build the figure from a numbered message list, not by editing the skeleton's shapes: message i sits at y = 60 + 40·i, runs from the sender's lifeline (or activation edge) to 2 units short of the receiver's activation edge, or its lifeline when it has none, and its label is centred between the path's two endpoints at y − 8 — one `<path>` and one `<text>` per message, in list order, so a message with a missing path or label is a bug you can count. Lifelines end at 60 + 40·n + 20; the viewBox is 60 + 40·n + 40 tall.
+- **HTML flows.** The step row is `display: flex; gap: 10px` with every step `flex: 1 1 0; min-width: 0` so five steps share one row, and an inline SVG chevron between steps; below 720px the row becomes a column and the chevrons rotate 90°. Never let the row wrap — a lone last step with a dangling arrow is the classic failure. Every figure takes the page's full column (about 920px), not the 65ch text measure: five steps in a 680px body wrap their titles.
+- **Accessibility.** Every SVG that carries meaning gets `role="img"` and an `aria-label` that says what the figure shows; a decorative chevron gets `aria-hidden="true"`; a `<figcaption>` under every figure.
+
 ## Pre-publish checklist
 
 1. No external URL anywhere except `<a href>` links — grep for `src="http`, `href="http` outside anchors, `@import`, `url(http`.
@@ -70,3 +99,4 @@ Before writing code, sketch a compact plan: 4–6 named colors, 2+ type roles, a
 4. **390px pass**: no horizontal page scroll, multi-column grids collapsed to one column, every table and code block scrolling inside its own wrapper, nothing clipped. Still right at desktop width.
 5. Every non-void element closed, attributes double-quoted, visible keyboard focus, `prefers-reduced-motion` respected.
 6. Under 10 MB including data URIs.
+7. Every figure: labels off the lines, arrows on box edges, no literal colour, no wrapped step row.
