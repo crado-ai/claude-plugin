@@ -8,7 +8,7 @@ when_to_use: The user asks to publish, share, or "make a page" out of something 
 
 A crado page is one self-contained HTML document, stored byte-for-byte and served raw on its own subdomain inside a sandboxed iframe. Nothing is injected for you — no doctype, no reset, no theme stamping — and nothing external loads. Author the complete document, from `<!doctype html>` to `</html>`.
 
-Publish with `publish_page` (title + html, optional `collection` and `workspace`); it returns the page's `url` and `page_id`. To change a page that is already live, call `update_page` with that `page_id` — the URL stays the same. Never publish a second copy to "update" something. Hand the returned URL to the user.
+Publish with `publish_page` (title + html, optional `collection`, `workspace` and `visibility`); it returns the page's `url` and `page_id`. To change a page that is already live, call `update_page` with that `page_id` — the URL stays the same. `visibility` is `public`, `workspace` or `only_you`; omit it to take the workspace default, and pass `default` to `update_page` to go back to it. Never publish a second copy to "update" something. Hand the returned URL to the user.
 
 ## Hard constraints (CSP + iframe sandbox — violations fail silently)
 

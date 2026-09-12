@@ -35,8 +35,8 @@ To verify: `claude mcp list` should show `crado` as connected, and asking Claude
 
 ## Available tools
 
-- **`publish_page`** — publish a complete, self-contained HTML document and get back `url`, `page_id` and `revision`. Arguments: `title`, `html`, optional `collection`, `workspace`, `source`.
-- **`update_page`** — replace the content, title or collection of a page already published, keeping its URL. Arguments: `page_id`, optional `title`, `html`, `collection`.
+- **`publish_page`** — publish a complete, self-contained HTML document and get back `url`, `page_id`, `revision`, `visibility` and `visibility_source`. Arguments: `title`, `html`, optional `collection`, `workspace`, `source`, `visibility` (`public`, `workspace` or `only_you`; omit it to take the workspace default).
+- **`update_page`** — replace the content, title, collection or visibility of a page already published, keeping its URL. Arguments: `page_id`, optional `title`, `html`, `collection`, `visibility` (`public`, `workspace`, `only_you`, or `default` to follow the workspace default again).
 - **`list_pages`** — list published pages, newest first, with titles, URLs and page_ids. Arguments: optional `workspace`, `collection`, `limit`, `offset`.
 - **`list_workspaces`** — list the workspaces the key's owner belongs to; use a returned name or `workspace_id` as the `workspace` argument elsewhere. No arguments.
 

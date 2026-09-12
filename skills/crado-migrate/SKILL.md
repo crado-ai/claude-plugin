@@ -97,7 +97,7 @@ Publish sequentially and report progress every few pages for large batches.
 | `PAYLOAD_TOO_LARGE` | Page over 10 MiB | Compress images, then split the document |
 | "This key can only publish to its bound collection" | Key is scoped to one collection | Omit the `collection` argument, or have the user create an unscoped workspace key |
 | "Page was updated concurrently" | Racing update on the same page | Retry the `update_page` once |
-| "Nothing to update" | `update_page` called with only `page_id` | Include at least one of `title`, `html`, `collection` |
+| "Nothing to update" | `update_page` called with only `page_id` | Include at least one of `title`, `html`, `collection`, `visibility` |
 | Tool call truncated or rejected before it reaches crado | The HTML is several MB and cannot be passed as an MCP tool argument — a large document blown up by embedded images hits the per-message output cap, and a subagent cannot emit it at all | Publish over HTTP instead — see below |
 
 ### Publishing a very large page without the MCP tool
