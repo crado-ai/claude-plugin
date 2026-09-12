@@ -1,8 +1,8 @@
 {
   "name": "crado",
   "displayName": "crado",
-  "version": "0.2.0",
-  "description": "Publish shareable pages to crado from Claude Code: MCP server connection plus the crado-page-design and crado-migrate skills.",
+  "version": "0.3.0",
+  "description": "Publish shareable pages and Claude Design canvases to crado from Claude Code: MCP server connection plus the crado-page-design and crado-migrate skills.",
   "author": {
     "name": "crado",
     "url": "https://crado.ai"
@@ -10,6 +10,6 @@
   "homepage": "https://crado.ai",
   "repository": "https://github.com/crado-ai/claude-plugin",
   "license": "MIT",
-  "keywords": ["crado", "publish", "share", "page", "artifact", "html", "mcp"],
+  "keywords": ["crado", "publish", "share", "page", "artifact", "html", "mcp", "design", "canvas"],
   "mcpServers": "./.mcp.json"
 }
