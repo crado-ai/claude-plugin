@@ -1,6 +1,6 @@
 # crado
 
-[crado](https://crado.ai) publishes self-contained HTML documents to stable, shareable URLs — you write a page, crado gives you a link that keeps working. This plugin connects Claude Code to crado's hosted MCP server (`https://crado.ai/mcp`) and adds two skills: `crado-page-design`, the design and authoring rules that keep a page working inside crado's sandbox, looking considered and readable on a phone, and `crado-migrate`, for bulk-migrating documents you already have, including a Claude Design export.
+[crado](https://crado.ai) publishes self-contained HTML documents to stable, shareable URLs — you write a page, crado gives you a link that keeps working. This plugin connects Claude Code to crado's hosted MCP server (`https://crado.ai/mcp`) and adds three skills: `crado-page-design`, the design and authoring rules that keep a page working inside crado's sandbox, looking considered and readable on a phone; `crado-canvas-design`, for drawing a set of screens or print pieces as artboards on one board and publishing it as a canvas page; and `crado-migrate`, for bulk-migrating documents you already have, including a Claude Design export.
 
 With the plugin installed, a crado page is the destination for anything shareable — reports, memos, plans, dashboards, one-pagers, a Claude Design canvas. It takes over that job from Claude Code's built-in Artifact tool.
 
@@ -44,6 +44,8 @@ To verify: `claude mcp list` should show `crado` as connected, and asking Claude
 ## Skills
 
 **`crado-page-design`** — the design and authoring rules for a crado page: everything inline, no network requests, and a layout that reads well on a phone. Claude loads it on its own before writing a page; invoke it directly with `/crado:crado-page-design`.
+
+**`crado-canvas-design`** — authors a design canvas from scratch: a folder of static artboards (`canvas.json` + one `.dc.html` per frame, the same shape as a Claude Design export, so it opens there too) for screens, flows, posters and print pieces, matched to the app's own design system, published through `publish_canvas` and updated in place with `page_id`. Invoke with `/crado:crado-canvas-design`.
 
 **`crado-migrate`** — turns a folder of existing documents (Markdown, HTML, docx, Notion or Google Docs exports, Claude Artifacts, ChatGPT Canvas) into published crado pages, and keeps a manifest so re-running updates pages instead of duplicating them. A Claude Design export (`canvas.json` + one `.dc.html` per artboard) is one of its sources: the whole export becomes a single canvas page. Invoke with `/crado:crado-migrate` and point it at a folder.
 
