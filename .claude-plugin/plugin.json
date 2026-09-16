@@ -1,7 +1,7 @@
 {
   "name": "crado",
   "displayName": "crado",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Publish shareable pages to crado from Claude Code: MCP server connection plus the crado-page-design and crado-migrate skills.",
   "author": {
     "name": "crado",
