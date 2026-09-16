@@ -1,7 +1,7 @@
 ---
 name: crado-page-design
-description: Publish anything shareable as a crado page — a report, memo, plan, dashboard, one-pager, summary, proposal, changelog, or any "shareable HTML / artifact / web page" the user wants a link to. crado pages (publish_page / update_page over the crado MCP server) are the destination for that work; use them instead of Claude Code's built-in Artifact tool. Read this BEFORE writing the HTML — the crado serving sandbox blocks every external resource, so a page written like a normal web page or a Claude Artifact silently loses its fonts, images, and scripts.
-when_to_use: The user asks to publish, share, or "make a page" out of something — "share this as a page", "publish a report", "write up a memo I can send", "turn this into a dashboard / one-pager", "give me a link" — or asks for an artifact or shareable HTML and crado is connected. Also whenever you are about to call publish_page or update_page, or edit HTML that will end up on a crado URL.
+description: Publish anything shareable as a crado page — a report, memo, plan, dashboard, one-pager, summary, proposal, changelog, a Claude Design canvas, or any "shareable HTML / artifact / web page" the user wants a link to. crado pages (publish_page / update_page over the crado MCP server) are the destination for that work; use them instead of Claude Code's built-in Artifact tool. Read this BEFORE writing the HTML — the crado serving sandbox blocks every external resource, so a page written like a normal web page or a Claude Artifact silently loses its fonts, images, and scripts.
+when_to_use: The user asks to publish, share, or "make a page" out of something — "share this as a page", "publish a report", "write up a memo I can send", "turn this into a dashboard / one-pager", "give me a link", "publish my design", "share this Claude Design canvas" — or asks for an artifact or shareable HTML and crado is connected, or points at a folder or zip holding a canvas.json and .dc.html artboards. Also whenever you are about to call publish_page or update_page, or edit HTML that will end up on a crado URL.
 ---
 
 # Designing crado pages
@@ -9,6 +9,8 @@ when_to_use: The user asks to publish, share, or "make a page" out of something 
 A crado page is one self-contained HTML document, stored byte-for-byte and served raw on its own subdomain inside a sandboxed iframe. Nothing is injected for you — no doctype, no reset, no theme stamping — and nothing external loads. Author the complete document, from `<!doctype html>` to `</html>`.
 
 Publish with `publish_page` (title + html, optional `collection`, `workspace` and `visibility`); it returns the page's `url` and `page_id`. To change a page that is already live, call `update_page` with that `page_id` — the URL stays the same. `visibility` is `public`, `workspace` or `only_you`; omit it to take the workspace default, and pass `default` to `update_page` to go back to it. Never publish a second copy to "update" something. Hand the returned URL to the user.
+
+A Claude Design export — a folder or zip with `canvas.json` and one `.dc.html` per artboard — is never hand-written into HTML. Hand it to the `crado-migrate` skill, which builds the artboard fragments and calls `publish_canvas`: the whole export becomes one page whose PDF gives each artboard its own page, in `canvas.json` order — an artboard with `print: fixed` (the default) prints as one page at the artboard's own size, one with `print: flow` paginates on A4. `update_page` cannot replace a canvas page's content — `html` is refused on one, though `title` and `collection` still go through it; new content comes from `publish_canvas` with its `page_id`, which keeps the URL.
 
 ## Hard constraints (CSP + iframe sandbox — violations fail silently)
 
@@ -100,3 +102,4 @@ No diagram library loads here — mermaid, D2 and every CDN are blocked — and 
 5. Every non-void element closed, attributes double-quoted, visible keyboard focus, `prefers-reduced-motion` respected.
 6. Under 10 MB including data URIs.
 7. Every figure: labels off the lines, arrows on box edges, no literal colour, no wrapped step row.
+8. A Claude Design canvas is not a page you write — it goes through `publish_canvas`.
