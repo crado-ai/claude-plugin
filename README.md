@@ -74,7 +74,7 @@ claude mcp add --transport http crado https://crado.ai/mcp \
   --header "Authorization: Bearer <your key>" --scope user
 ```
 
-You then do not get the two skills.
+You then do not get the three skills.
 
 ## Updating
 
