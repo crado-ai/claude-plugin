@@ -65,6 +65,16 @@ There is also an `"enableArtifact": false` setting (Claude Code v2.1.242 and lat
 
 To verify: start a fresh session; Artifact is no longer in the tool list.
 
+## Other clients
+
+The three skills follow the Agent Skills format, so any client that reads `SKILL.md` folders can install them from this repo with the [`skills`](https://github.com/vercel-labs/skills) CLI:
+
+```bash
+npx skills add crado-ai/claude-plugin -a cursor -g       # or codex, gemini-cli, github-copilot, kimi-code-cli, windsurf …
+```
+
+`-g` installs them for every project; drop it to install into the current project only. The MCP server is added separately with the client's own command — [crado.ai/docs](https://crado.ai/docs) has the line for each client.
+
 ## Not using the plugin?
 
 The MCP server can be added on its own:
