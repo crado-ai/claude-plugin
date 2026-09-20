@@ -5,7 +5,7 @@ description: Migrate existing documents (Markdown, HTML, Word/docx, Notion expor
 
 # Migrate documents to crado
 
-crado publishes self-contained HTML documents to stable, shareable URLs. Publishing goes through the crado MCP server, which exposes five tools: `publish_page`, `publish_canvas`, `update_page`, `list_pages`, and `list_workspaces`. This skill turns a set of existing documents into crado pages, idempotently — re-running a migration updates pages instead of duplicating them. A Claude Design export is one of those sources and goes through `publish_canvas`, not `publish_page`.
+crado publishes self-contained HTML documents to stable, shareable URLs. Publishing goes through the crado MCP server, which exposes ten tools: `publish_page`, `update_page`, `publish_canvas`, `generate_document`, `list_templates`, `save_template`, `list_pages`, `list_workspaces`, `upload_asset` and `list_generations`. A migration uses five of them — `publish_page`, `publish_canvas`, `update_page`, `list_pages` and `list_workspaces`. This skill turns a set of existing documents into crado pages, idempotently — re-running a migration updates pages instead of duplicating them. A Claude Design export is one of those sources and goes through `publish_canvas`, not `publish_page`.
 
 ## Step 0 — Preflight
 

@@ -98,7 +98,7 @@ A reply's label reuses its request's x so the pair lines up (rows 3 and 5). Then
       <path d="M312 260H97"/>
     </g>
     <g class="mono">
-      <text x="203" y="92" text-anchor="middle">generate_page(template, data)</text>
+      <text x="203" y="92" text-anchor="middle">generate_document(template, data)</text>
       <text x="436" y="132" text-anchor="middle">render(html)</text>
       <text x="436" y="172" text-anchor="middle" class="muted">pdf bytes</text>
       <text x="548" y="212" text-anchor="middle">put(exports/{id}.pdf)</text>
