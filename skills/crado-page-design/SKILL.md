@@ -17,10 +17,11 @@ A Claude Design export — a folder or zip with `canvas.json` and one `.dc.html`
 ## Hard constraints (CSP + iframe sandbox — violations fail silently)
 
 - **Everything inline.** `script-src` and `style-src` are `'unsafe-inline'` only: no `<script src>`, no `<link rel="stylesheet">`, no same-origin files. Google Fonts and every CDN are blocked — this is stricter than Claude Artifacts, so do not carry Artifact habits over.
-- **Images, media, fonts: `data:` only** (`blob:` also works for img/media). No `https:` images. Embed images as data URIs; fonts as `@font-face` data URIs, or use system font stacks.
-- **No network, no storage.** `connect-src 'none'` (no fetch/XHR/WebSocket), `form-action 'none'`, `base-uri 'none'`. The iframe has no `allow-same-origin`: opaque origin, so `localStorage`, `sessionStorage`, `IndexedDB` and cookies all throw or fail. State lives in JS memory for the visit only.
+- **Images/media/fonts: `data:` (and `blob:` for img/media) only.** No `https:` images. Embed images as data URIs; fonts as `@font-face` data URIs or use system font stacks.
+- **No network, no storage.** `connect-src 'none'` (no fetch/XHR/WebSocket), `form-action 'none'`, `base-uri 'none'`. The iframe has no `allow-same-origin`: opaque origin, so `localStorage`/`sessionStorage`/`IndexedDB`/cookies all throw or fail. State lives in JS memory for the visit only.
 - **Interactivity that works:** inline `<script>`, popups (`allow-popups`), plain `<a href>` links. Anything needing a server round-trip or persistence does not.
-- **10 MB cap** on the HTML string — data-URI images count heavily; compress and downscale before embedding.
+- **10 MB cap** on the HTML string — data-URI images count heavily; compress before embedding.
+- A small link bridge script is appended after `</html>` at serve time: it hands `<a href>` clicks to the reader, which navigates the top window in the same tab. `#anchor` links and `target="_blank"` are left to the browser. Don't enumerate `document.scripts` expecting only your own.
 
 ## Linking
 
@@ -42,9 +43,9 @@ The document sits in an iframe as wide as the reader's screen and gets no viewpo
 
 ## Theme
 
-The reader's dark/light toggle repaints only the chrome around the iframe; the document gets no `data-theme`, no class, no CSS-variable passthrough. So:
+The reader's dark/light toggle repaints only the chrome around the iframe; the document gets no `data-theme`, no class, no CSS-var passthrough. So:
 
-- **Always set an explicit `background` on `body`** — an unset or transparent background shows the app's flipping ground through, and the page breaks in one theme.
+- **Always set an explicit `background` on `body`** — an unset/transparent background shows the app's flipping ground through and the page breaks in one theme.
 - Support both themes with `prefers-color-scheme` via CSS custom properties: full light palette on `:root`, token overrides only inside the media query, components styled through tokens. Never give a color its only definition inside the media query.
 - A deliberately single-theme page (dark-first poster, letterpress invitation) may skip the media query — but still paint background and every color explicitly.
 
@@ -61,27 +62,27 @@ PDF export renders the same document headlessly and injects crado's print styles
 
 ## Templates: generate instead of writing HTML
 
-When the workspace already has a template for the kind of document being asked for, call `generate_page` with that template and the data it needs instead of writing the HTML yourself. The template owns the layout and the pagination; the data is the truth. One call renders it, publishes the page and builds the PDF, and returns `page_id`, `url`, `pdf_url`, `page_count`, `missing_fields` and `template_version`. Write the HTML and call `publish_page` only for free-form documents no template covers.
+When the workspace already has a template for the kind of document being asked for, call `generate_document` with that template and the data it needs instead of writing the HTML yourself. The template owns the layout and the pagination; the data is the truth. One call renders it, publishes an immutable generated document and builds the PDF, and returns `generation_id`, `url`, `pdf_url`, `page_count`, `missing_fields`, `template_version` and `series`. A generated document is never updated or restored and stays out of the library — generate again for a new one; pass `series`, a key you own such as `titan:schedule:134676`, to group runs for one subject, and `series.url` always opens the newest. Write the HTML and call `publish_page` only for free-form documents no template covers.
 
 - **Look first.** `list_templates` returns each template's key, name, current version, paper size, the top-level field names its sample data carries, and which one is the workspace default. Shape `data` like that sample.
-- **Photos.** They travel inside `data` as data URIs, so resize before you send: about 1200 px on the long edge, JPEG quality around 70. The whole `data` object is capped at 10 MB.
+- **Photos and fonts.** Upload each file once per workspace with `upload_asset` — resize photos first, about 1200 px on the long edge and JPEG quality around 70; 10 MB per file — and put the returned `url` in the data where the template renders it as `src`. The published page loads it from that url and crado inlines the bytes into the PDF. A data URI still works, but the whole `data` object is capped at 10 MB.
 - **Missing fields.** `missing_fields` lists every field the template read that your data did not supply, and each one prints as `[missing: field]` in both the page and the PDF. Fill them and generate again rather than shipping the marker.
 - **The PDF link.** For a page that is not public, `pdf_url` carries a token that works for 24 hours; hand it over promptly or regenerate it.
 - **Frame templates.** A template whose body slot is `{{ body }}` wraps HTML you wrote yourself: pass its key as `template` to `publish_page` or `update_page` and your HTML becomes the body.
 
 ## Design process
 
-Before writing code, sketch a compact plan: 4–6 named colors, 2+ type roles, a one-sentence layout concept — then derive every decision from it.
+Follow the artifact-design fundamentals, adapted to the constraints above. Before writing code, sketch a compact plan: 4–6 named colors, 2+ type roles, a one-sentence layout concept — then derive every decision from it.
 
 - **Calibrate treatment.** Memos, plans, reports get a polished utilitarian treatment — real hierarchy, considered spacing, a proper palette, no giant hero. Landing pages and keepsakes get the editorial treatment with one deliberate aesthetic risk. A well-composed page is never wrong; an over-designed one sometimes is.
 - **Ground it in the subject.** Distinctive choices come from the subject's own world. Real content throughout, never lorem.
-- **Type without webfonts.** With Google Fonts blocked, either embed a face as a `@font-face` data URI (woff2, subset it — budget matters) or design deliberately with system stacks: `Charter, 'Bitstream Charter', Georgia, serif` · `'Avenir Next', 'Segoe UI', system-ui, sans-serif` · `'SF Mono', 'Cascadia Code', Consolas, monospace` are all characterful. Keep running text around 65ch, set a scale and stay on it, `text-wrap: balance` on headings, letter-spacing on uppercase labels.
+- **Type without webfonts.** With Google Fonts blocked, either embed a face as a `@font-face` data URI (woff2, subset it — budget matters) or design deliberately with system stacks: `Charter, 'Bitstream Charter', Georgia, serif` · `'Avenir Next', 'Segoe UI', system-ui, sans-serif` · `'SF Mono', 'Cascadia Code', Consolas, monospace` are all characterful. Keep running text ~65ch, set a scale and stay on it, `text-wrap: balance` on headings, letter-spacing on uppercase labels.
 - **Choose neutrals** — hue-bias greys toward the accent; never default mid-grey.
-- **Avoid the AI-design clichés**: cream + serif + terracotta, near-black + lone acid accent, purple-blue gradient hero, Inter-as-default, emoji section markers, everything centered, rounded corners on everything, accent bars on rounded cards. If the user asks for one of these, their words win.
-- **Layout does the spacing**: flex/grid + `gap`, not stacked margins. `font-variant-numeric: tabular-nums` where digits align.
-- **Structure encodes information** — numbered markers only for real sequences; eyebrows, dividers and labels must say something true.
+- **Avoid the AI-design clichés**: cream + serif + terracotta, near-black + lone acid accent, purple-blue gradient hero, Inter-as-default, emoji section markers, everything centered, `rounded-lg` everywhere, accent bars on rounded cards. If the user asks for one of these, their words win.
+- **Layout does the spacing**: flex/grid + `gap`, not stacked margins. Wide tables/code get their own `overflow-x: auto` container. `font-variant-numeric: tabular-nums` where digits align.
+- **Structure encodes information** — numbered markers only for real sequences; eyebrows/dividers/labels must say something true.
 - **Copy is design material**: name things by what readers recognize, active voice, specific beats clever.
-- Include a real `<title>` (a short noun-phrase name, no appended explainer) — it shows on the direct URL's tab. The `title` argument to `publish_page` is separate library metadata; keep the two consistent.
+- Include a real `<title>` (short noun-phrase name, no appended explainer) — it shows on the direct URL's tab. The `title` input to publish_page is separate library metadata; keep the two consistent.
 
 ## Diagrams
 
@@ -100,7 +101,7 @@ No diagram library loads here — mermaid, D2 and every CDN are blocked — and 
 1. No external URL anywhere except `<a href>` links — grep for `src="http`, `href="http` outside anchors, `@import`, `url(http`.
 2. Links to other crado pages use the absolute `url` from `publish_page` / `list_pages`, never a relative path.
 3. `body` has an explicit token background; no color defined only inside a media query.
-4. **390px pass**: no horizontal page scroll, multi-column grids collapsed to one column, every table and code block scrolling inside its own wrapper, nothing clipped. Still right at desktop width.
+4. **390px pass**: no horizontal page scroll, multi-column grids collapsed to one column, every table and code block scrolling inside its own wrapper, nothing hidden behind hover.
 5. Every non-void element closed, attributes double-quoted, visible keyboard focus, `prefers-reduced-motion` respected.
 6. Under 10 MB including data URIs.
 7. Every figure: labels off the lines, arrows on box edges, no literal colour, no wrapped step row.
