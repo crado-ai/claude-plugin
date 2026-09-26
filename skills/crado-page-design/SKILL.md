@@ -49,6 +49,12 @@ The reader's dark/light toggle repaints only the chrome around the iframe; the d
 - Support both themes with `prefers-color-scheme` via CSS custom properties: full light palette on `:root`, token overrides only inside the media query, components styled through tokens. Never give a color its only definition inside the media query.
 - A deliberately single-theme page (dark-first poster, letterpress invitation) may skip the media query — but still paint background and every color explicitly.
 
+## Language
+
+- Set `lang` on `<html>` to the page's main language: `en`, `zh-Hant-HK` for Traditional Chinese as written in Hong Kong, `zh-Hant` or `zh-Hans` otherwise.
+- Mark every run in the other language with its own `lang` — `<span lang="zh-Hant-HK">供應商表現</span>` inside an English page, `<span lang="en">` inside a Chinese one — so screen readers pronounce it and the browser picks the right fonts, line breaking and punctuation for it.
+- Chinese text is never italic; use weight or colour for emphasis, and give Chinese runs a `line-height` of at least 1.7.
+
 ## PDF / print
 
 PDF export renders the same document headlessly and injects crado's print stylesheet at render time, so every page gets these defaults for free: a heading is never left alone at the foot of a page, table heads and feet repeat on every page, and table rows, figures and images never split.
@@ -101,8 +107,9 @@ No diagram library loads here — mermaid, D2 and every CDN are blocked — and 
 1. No external URL anywhere except `<a href>` links — grep for `src="http`, `href="http` outside anchors, `@import`, `url(http`.
 2. Links to other crado pages use the absolute `url` from `publish_page` / `list_pages`, never a relative path.
 3. `body` has an explicit token background; no color defined only inside a media query.
-4. **390px pass**: no horizontal page scroll, multi-column grids collapsed to one column, every table and code block scrolling inside its own wrapper, nothing hidden behind hover.
-5. Every non-void element closed, attributes double-quoted, visible keyboard focus, `prefers-reduced-motion` respected.
-6. Under 10 MB including data URIs.
-7. Every figure: labels off the lines, arrows on box edges, no literal colour, no wrapped step row.
-8. A Claude Design canvas is not a page you write — it goes through `publish_canvas`.
+4. `lang` on `<html>`, and every run in the other language marked with its own `lang`.
+5. **390px pass**: no horizontal page scroll, multi-column grids collapsed to one column, every table and code block scrolling inside its own wrapper, nothing hidden behind hover.
+6. Every non-void element closed, attributes double-quoted, visible keyboard focus, `prefers-reduced-motion` respected.
+7. Under 10 MB including data URIs.
+8. Every figure: labels off the lines, arrows on box edges, no literal colour, no wrapped step row.
+9. A Claude Design canvas is not a page you write — it goes through `publish_canvas`.
